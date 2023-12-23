@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        th,
+        td {
+            text-align: center;
+            padding: 8px;
+        }
+
+        table {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <tr>
+            <th>Popularity</th>
+            <th>Title</th>
+            <th>Price</th>
+            <th>Subcategory</th>
+        </tr>
+        <tbody id="tBody"></tbody>
+    </table>
+    <button id="prevButton" onclick="changePage(-1)">Previous</button>
+    <button id="nextButton" onclick="changePage(1)">Next</button>
+
+    <span id="start"></span>
+    <span>-</span>
+    <span id="end"></span>
+    <script type="text/javascript" async>
+        const url = "https://s3.amazonaws.com/open-to-cors/assignment.json";
+        let currentPage = 1;
+        const itemsPerPage = 50;
+
+        fetch(url)
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (products) {
+                const array = Object.values(products);
+                const prod = Object.values(array[1]);
+                const sortedProd = prod.sort(function (x, y) {
+                    return y.popularity - x.popularity;
+                })
+                buildTable(sortedProd, currentPage);
+            })
+            .catch(function (err) {
+                console.log(err);
+            })
+
+        function buildTable(data, page) {
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+
+            if (startIndex >= 0 && endIndex <= 1000) {
+                const paginatedData = data.slice(startIndex, endIndex);
+                document.getElementById("start").innerText = startIndex
+                document.getElementById("end").innerText = endIndex
+                document.getElementById("tBody").innerHTML = "";
+
+                for (let i = 0; i < paginatedData.length; i++) {
+                    let row = `
+                    <tr>
+                        <td>${paginatedData[i].popularity}</td>
+                        <td>${paginatedData[i].title}</td>
+                        <td>${paginatedData[i].price}</td>
+                        <td>${paginatedData[i].subcategory}</td>
+                    </tr>
+                `
+                    document.getElementById("tBody").innerHTML += row;
+                }
+            }
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            fetch(url)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (products) {
+                    const array = Object.values(products);
+                    const prod = Object.values(array[1]);
+                    const sortedProd = prod.sort(function (x, y) {
+                        return y.popularity - x.popularity;
+                    })
+                    buildTable(sortedProd, currentPage);
+                })
+                .catch(function (err) {
+                    console.log(err);
+                })
+        }
+    </script>
+
+</body>
+
+</html>
